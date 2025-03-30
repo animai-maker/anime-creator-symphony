@@ -7,28 +7,40 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
+import React from "react";
 
-const queryClient = new QueryClient();
+const App = () => {
+  // Create a client
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      },
+    },
+  });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/how-it-works" element={<Index />} />
-          <Route path="/explore" element={<Index />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/create" element={<Index />} />
-          <Route path="/about" element={<Index />} />
-          <Route path="/contact" element={<Index />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/how-it-works" element={<Index />} />
+              <Route path="/explore" element={<Index />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/create" element={<Index />} />
+              <Route path="/about" element={<Index />} />
+              <Route path="/contact" element={<Index />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+};
 
 export default App;
