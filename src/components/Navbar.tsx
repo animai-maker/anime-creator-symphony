@@ -79,8 +79,9 @@ const Navbar = () => {
   // Update activeItem based on current path whenever location changes
   useEffect(() => {
     const path = location.pathname;
-    const navItems = user ? privateNavItems : publicNavItems;
-    const matchingItem = navItems.find(item => item.path === path);
+    // Important: Use the correct nav items based on authentication status
+    const currentNavItems = user ? privateNavItems : publicNavItems;
+    const matchingItem = currentNavItems.find(item => item.path === path);
     if (matchingItem) {
       setActiveItem(matchingItem.id);
     }
@@ -131,7 +132,7 @@ const Navbar = () => {
     }
   };
 
-  // Determine which navigation items to show based on auth status
+  // IMPORTANT FIX: Determine which navigation items to show based on auth status
   const navItems = user ? privateNavItems : publicNavItems;
 
   return (
