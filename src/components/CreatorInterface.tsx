@@ -1,11 +1,36 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, Play, Pause } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 const CreatorInterface = () => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      const video = videoRef.current;
+      
+      const handleDurationChange = () => {
+        setDuration(video.duration);
+      };
+      
+      const handleTimeUpdate = () => {
+        setCurrentTime(video.currentTime);
+      };
+      
+      video.addEventListener('durationchange', handleDurationChange);
+      video.addEventListener('timeupdate', handleTimeUpdate);
+      
+      return () => {
+        video.removeEventListener('durationchange', handleDurationChange);
+        video.removeEventListener('timeupdate', handleTimeUpdate);
+      };
+    }
+  }, []);
 
   const togglePlayback = () => {
     if (videoRef.current) {
@@ -17,6 +42,16 @@ const CreatorInterface = () => {
       setIsPlaying(!isPlaying);
     }
   };
+
+  // Format time to MM:SS
+  const formatTime = (seconds: number) => {
+    if (isNaN(seconds)) return '0:00';
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return <div className="w-full max-w-6xl mx-auto py-8">
       <div className="animai-glass p-8 rounded-3xl">
@@ -60,6 +95,11 @@ const CreatorInterface = () => {
                   className="w-full h-full object-cover"
                   loop
                   onClick={togglePlayback}
+                  onLoadedMetadata={() => {
+                    if (videoRef.current) {
+                      setDuration(videoRef.current.duration);
+                    }
+                  }}
                 />
                 <div className="absolute bottom-2 left-0 right-0 px-2">
                   <div className="bg-black/30 backdrop-blur-sm rounded-full p-1 flex items-center gap-1">
@@ -74,10 +114,14 @@ const CreatorInterface = () => {
                     >
                       {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
                     </Button>
-                    <div className="bg-white/30 h-1 flex-grow rounded-full">
-                      <div className="bg-white h-full w-1/3 rounded-full"></div>
+                    <div className="bg-white/30 h-1 flex-grow rounded-full overflow-hidden">
+                      <Progress 
+                        value={progressPercent} 
+                        className="h-full bg-white/30" 
+                        indicatorClassName="bg-white"
+                      />
                     </div>
-                    <span className="text-white text-xs">0:12</span>
+                    <span className="text-white text-xs">{formatTime(duration)}</span>
                   </div>
                 </div>
               </div>
