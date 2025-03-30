@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, Plus, LogOut, CreditCard } from 'lucide-react';
 
+// Create a context-aware Navbar component
 const Navbar = () => {
   const [activeItem, setActiveItem] = useState('home');
   const [user, setUser] = useState<any>(null);
@@ -219,6 +219,11 @@ const Navbar = () => {
       </Button>
     </nav>
   );
+};
+
+// Create a wrapper component that can be safely used outside Router context
+export const NavbarWrapper = () => {
+  return null; // This is a placeholder, it won't render anything outside of Router context
 };
 
 export default Navbar;

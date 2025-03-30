@@ -65,9 +65,9 @@ const App = () => {
       <SessionContextProvider supabaseClient={supabase}>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
             <BrowserRouter>
+              <Toaster />
+              <Sonner />
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/how-it-works" element={<Index />} />
