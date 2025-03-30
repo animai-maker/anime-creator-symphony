@@ -1,7 +1,23 @@
-import React from 'react';
+
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Play } from 'lucide-react';
+import { Upload, Play, Pause } from 'lucide-react';
+
 const CreatorInterface = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const togglePlayback = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
   return <div className="w-full max-w-6xl mx-auto py-8">
       <div className="animai-glass p-8 rounded-3xl">
         <div className="flex flex-col md:flex-row items-center justify-center gap-8">
@@ -34,15 +50,30 @@ const CreatorInterface = () => {
             <p className="text-sm font-medium text-animai-purple mt-3 max-w-[130px] text-center">Transform your image into an animated video with your custom prompts!</p>
           </div>
 
-          {/* Preview Section - Polaroid Style */}
+          {/* Preview Section - Polaroid Style with Video */}
           <div className="flex flex-col items-center">
             <div className="bg-white p-3 pb-12 rounded-md shadow-lg transform rotate-[2deg] transition-transform hover:rotate-0 duration-300">
               <div className="relative w-48 h-48 mb-1 overflow-hidden">
-                <img src="/lovable-uploads/43127aaf-52fa-4f9f-9315-28d7075b3341.png" alt="Anime character preview" className="w-full h-full object-cover" />
+                <video 
+                  ref={videoRef}
+                  src="/demo-video.mp4" 
+                  className="w-full h-full object-cover"
+                  loop
+                  muted
+                  onClick={togglePlayback}
+                />
                 <div className="absolute bottom-2 left-0 right-0 px-2">
                   <div className="bg-black/30 backdrop-blur-sm rounded-full p-1 flex items-center gap-1">
-                    <Button size="icon" variant="ghost" className="text-white rounded-full h-6 w-6 flex items-center justify-center">
-                      <Play className="w-3 h-3" />
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      className="text-white rounded-full h-6 w-6 flex items-center justify-center"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePlayback();
+                      }}
+                    >
+                      {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
                     </Button>
                     <div className="bg-white/30 h-1 flex-grow rounded-full">
                       <div className="bg-white h-full w-1/3 rounded-full"></div>
@@ -63,4 +94,5 @@ const CreatorInterface = () => {
       </div>
     </div>;
 };
+
 export default CreatorInterface;
