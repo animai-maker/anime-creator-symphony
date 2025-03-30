@@ -51,6 +51,7 @@ const Navbar = () => {
     const getUser = async () => {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("Initial session check:", session?.user?.email || "No session");
       setUser(session?.user || null);
       setLoading(false);
     };
@@ -79,9 +80,8 @@ const Navbar = () => {
   // Update activeItem based on current path whenever location changes
   useEffect(() => {
     const path = location.pathname;
-    // Important: Use the correct nav items based on authentication status
-    const currentNavItems = user ? privateNavItems : publicNavItems;
-    const matchingItem = currentNavItems.find(item => item.path === path);
+    const navItems = user ? privateNavItems : publicNavItems;
+    const matchingItem = navItems.find(item => item.path === path);
     if (matchingItem) {
       setActiveItem(matchingItem.id);
     }
@@ -132,7 +132,7 @@ const Navbar = () => {
     }
   };
 
-  // IMPORTANT FIX: Determine which navigation items to show based on auth status
+  // Always use the correct nav items based on current authentication state
   const navItems = user ? privateNavItems : publicNavItems;
 
   return (
