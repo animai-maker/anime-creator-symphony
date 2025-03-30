@@ -5,15 +5,6 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, Plus, LogOut, CreditCard } from 'lucide-react';
-import { 
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   const [activeItem, setActiveItem] = useState('home');
@@ -24,29 +15,36 @@ const Navbar = () => {
   const navigate = useNavigate();
   
   // Different navigation items based on authentication status
-  const publicNavItems = [{
-    id: 'home',
-    label: 'Home',
-    path: '/'
-  }, {
-    id: 'pricing',
-    label: 'Pricing',
-    path: '/pricing'
-  }];
+  const publicNavItems = [
+    {
+      id: 'home',
+      label: 'Home',
+      path: '/'
+    }, 
+    {
+      id: 'pricing',
+      label: 'Pricing',
+      path: '/pricing'
+    }
+  ];
   
-  const privateNavItems = [{
-    id: 'dashboard',
-    label: 'Dashboard',
-    path: '/dashboard'
-  }, {
-    id: 'create',
-    label: 'Create Project',
-    path: '/create'
-  }, {
-    id: 'plans',
-    label: 'Plans & Billing',
-    path: '/pricing'
-  }];
+  const privateNavItems = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      path: '/dashboard'
+    }, 
+    {
+      id: 'create',
+      label: 'Create Project',
+      path: '/create'
+    }, 
+    {
+      id: 'plans',
+      label: 'Plans & Billing',
+      path: '/pricing'
+    }
+  ];
 
   // Check authentication status when component mounts
   useEffect(() => {
@@ -150,9 +148,16 @@ const Navbar = () => {
           transition: 'transform 0.3s ease'
         }} />
         
-        {navItems.map(item => <Link key={item.id} to={item.path} className={`relative px-4 py-2 text-animai-navy font-medium transition-colors z-10 ${activeItem === item.id ? 'text-animai-purple' : 'hover:text-animai-purple'}`} onClick={() => setActiveItem(item.id)}>
-          {item.label}
-        </Link>)}
+        {navItems.map(item => (
+          <Link 
+            key={item.id} 
+            to={item.path} 
+            className={`relative px-4 py-2 text-animai-navy font-medium transition-colors z-10 ${activeItem === item.id ? 'text-animai-purple' : 'hover:text-animai-purple'}`} 
+            onClick={() => setActiveItem(item.id)}
+          >
+            {item.label}
+          </Link>
+        ))}
       </div>
 
       <Button 
