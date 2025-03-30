@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Loader2 } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -20,6 +20,7 @@ const Dashboard = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
+        console.log("User in dashboard:", session.user);
         setUser(session.user);
       } else {
         navigate('/');
@@ -69,7 +70,7 @@ const Dashboard = () => {
         <Navbar />
         <main className="flex-grow container mx-auto px-4 py-16">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-animai-purple"></div>
+            <Loader2 className="h-12 w-12 animate-spin text-animai-purple" />
           </div>
         </main>
         <Footer />
@@ -92,7 +93,7 @@ const Dashboard = () => {
             >
               {signOutLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Signing out...
                 </>
               ) : (

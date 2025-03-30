@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 const Navbar = () => {
   const [activeItem, setActiveItem] = useState('home');
@@ -35,13 +36,20 @@ const Navbar = () => {
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.email);
         setUser(session?.user || null);
+        
+        // Navigate to dashboard on sign in
+        if (event === 'SIGNED_IN' && session) {
+          navigate('/dashboard');
+          toast.success(`Welcome ${session.user.email?.split('@')[0] || 'back'}!`);
+        }
       }
     );
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   // Update activeItem based on current path whenever location changes
   useEffect(() => {
@@ -68,7 +76,7 @@ const Navbar = () => {
       }
       
       // The redirect will happen automatically
-      toast.success('Signing in with Google...');
+      toast.success('Redirecting to Google for authentication...');
       
     } catch (error: any) {
       console.error('Error signing in with Google:', error);
@@ -112,7 +120,7 @@ const Navbar = () => {
       >
         {authLoading ? (
           <>
-            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+            <Loader2 className="h-4 w-4 animate-spin" />
             Signing in...
           </>
         ) : user ? (
