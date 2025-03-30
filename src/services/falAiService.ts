@@ -67,7 +67,9 @@ export const generateVideoFromImage = async (
         });
         break;
       } else if (status.status === "FAILED") {
-        throw new Error("Video generation failed: " + (status.errors?.[0]?.message || "Unknown error"));
+        // Fixed: Using correct error property access pattern
+        const errorMessage = status.error?.message || "Unknown error";
+        throw new Error("Video generation failed: " + errorMessage);
       }
 
       // Wait 5 seconds before checking again
