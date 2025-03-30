@@ -1,13 +1,16 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Play, Pause } from 'lucide-react';
+import { Upload, Play, Pause, Info } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const CreatorInterface = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -71,19 +74,52 @@ const CreatorInterface = () => {
             </Button>
           </div>
 
-          {/* Cute Arrow */}
-          <div className="flex flex-col items-center justify-center">
-            <div className="relative">
-              <div className="w-16 h-16 bg-animai-purple/20 rounded-full flex items-center justify-center animate-pulse-light">
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-animai-purple animate-float">
-                  <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+          {/* Cute Arrow with Dialog Trigger */}
+          <Dialog open={isPromptDialogOpen} onOpenChange={setIsPromptDialogOpen}>
+            <DialogTrigger asChild>
+              <div className="flex flex-col items-center justify-center cursor-pointer group">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-animai-purple/20 rounded-full flex items-center justify-center animate-pulse-light group-hover:bg-animai-purple/40 transition-colors">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-animai-purple animate-float">
+                      <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-8 -right-10 text-animai-pink -rotate-12 text-xl">✨</div>
+                  <div className="absolute -bottom-8 -left-6 text-animai-purple rotate-12 text-xl">🌟</div>
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p className="text-sm font-medium text-animai-purple mt-3 max-w-[130px] text-center flex items-center gap-1">
+                        View Prompts <Info className="h-3 w-3" />
+                      </p>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p className="text-xs">Click to see animation and sound prompts</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
-              <div className="absolute -top-8 -right-10 text-animai-pink -rotate-12 text-xl">✨</div>
-              <div className="absolute -bottom-8 -left-6 text-animai-purple rotate-12 text-xl">🌟</div>
-            </div>
-            <p className="text-sm font-medium text-animai-purple mt-3 max-w-[130px] text-center">Transform your image into an animated video with your custom prompts!</p>
-          </div>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-xl text-animai-navy">Animation Prompts</DialogTitle>
+                <DialogDescription>
+                  These prompts will be used to generate your video
+                </DialogDescription>
+              </DialogHeader>
+              <div className="font-handwritten text-lg text-animai-navy space-y-4 mt-4">
+                <div>
+                  <h3 className="font-semibold text-animai-purple mb-2">Animation prompt:</h3>
+                  <p>A high school girl stands on a hill at sunset, her hair gently swaying in the breeze as she gazes into the distance, calm and thoughtful. The sky glows in warm hues with drifting clouds and floating light particles, while the camera slowly pans around her, capturing the golden-hour magic.</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-animai-pink mb-2">Sound Effect prompt:</h3>
+                  <p>Light Piano or Music Box Melody</p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Preview Section - Polaroid Style with Video */}
           <div className="flex flex-col items-center">
@@ -132,14 +168,6 @@ const CreatorInterface = () => {
             <Button className="w-full mt-4 bg-animai-purple hover:bg-animai-lightpurple text-white">
               Generate Video
             </Button>
-          </div>
-        </div>
-
-        {/* Example Prompts Section - Added as per user request */}
-        <div className="mt-12 px-4 text-center max-w-4xl mx-auto">
-          <div className="font-handwritten text-lg text-animai-navy space-y-3">
-            <p><span className="font-semibold">Animation prompt:</span> A high school girl stands on a hill at sunset, her hair gently swaying in the breeze as she gazes into the distance, calm and thoughtful. The sky glows in warm hues with drifting clouds and floating light particles, while the camera slowly pans around her, capturing the golden-hour magic.</p>
-            <p><span className="font-semibold">Sound Effect prompt:</span> Light Piano or Music Box Melody</p>
           </div>
         </div>
       </div>
