@@ -4,7 +4,6 @@ import { Upload, Play, Pause, Info, Download } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
 import { generateVideoFromImage } from '@/services/falAiService';
 import { toast } from 'sonner';
 
@@ -71,11 +70,6 @@ const CreatorInterface = () => {
     fileInputRef.current?.click();
   };
 
-  const handleAnimationPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // The PlaceholdersAndVanishInput component will handle the animation
-  };
-
   const generateVideo = async () => {
     if (!uploadedImage) {
       toast.error("Please upload an image first");
@@ -122,7 +116,6 @@ const CreatorInterface = () => {
     document.body.removeChild(link);
   };
 
-  // Format time to MM:SS
   const formatTime = (seconds: number) => {
     if (isNaN(seconds)) return '0:00';
     const minutes = Math.floor(seconds / 60);
@@ -132,18 +125,9 @@ const CreatorInterface = () => {
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  // Animation prompt suggestions
-  const animationPromptPlaceholders = [
-    "A high school girl stands on a hill at sunset...",
-    "A boy with spiky hair runs through a futuristic cityscape...",
-    "A magical girl transforms with sparkles and light effects...",
-    "A samurai meditates under a cherry blossom tree..."
-  ];
-
   return <div className="w-full max-w-6xl mx-auto py-8">
       <div className="animai-glass p-8 rounded-3xl">
         <div className="flex flex-col md:flex-row items-center justify-center gap-8">
-          {/* Upload Section - Polaroid Style */}
           <div className="flex flex-col items-center">
             <div className="bg-white p-3 pb-12 rounded-md shadow-lg transform rotate-[-2deg] transition-transform hover:rotate-0 duration-300">
               <div className="relative w-48 h-48 mb-1 overflow-hidden">
@@ -172,7 +156,6 @@ const CreatorInterface = () => {
             </Button>
           </div>
 
-          {/* Cute Arrow with Dialog Trigger */}
           <Dialog open={isPromptDialogOpen} onOpenChange={setIsPromptDialogOpen}>
             <DialogTrigger asChild>
               <div className="flex flex-col items-center justify-center cursor-pointer group">
@@ -219,7 +202,6 @@ const CreatorInterface = () => {
             </DialogContent>
           </Dialog>
 
-          {/* Preview Section - Polaroid Style with Video */}
           <div className="flex flex-col items-center">
             <div className="bg-white p-3 pb-12 rounded-md shadow-lg transform rotate-[2deg] transition-transform hover:rotate-0 duration-300">
               <div className="relative w-48 h-48 mb-1 overflow-hidden">
@@ -264,30 +246,21 @@ const CreatorInterface = () => {
               </p>
             </div>
             <div className="w-full mt-4 flex flex-col gap-2">
-              <div className="w-full">
-                <PlaceholdersAndVanishInput
-                  placeholders={animationPromptPlaceholders}
-                  onChange={(e) => setAnimationPrompt(e.target.value)}
-                  onSubmit={handleAnimationPromptSubmit}
-                />
-              </div>
-              <div className="flex gap-2 w-full">
+              <Button 
+                className="flex-grow bg-animai-purple hover:bg-animai-lightpurple text-white"
+                onClick={generateVideo}
+                disabled={isGenerating || !uploadedImage}
+              >
+                {isGenerating ? generationStatus : "Generate Video"}
+              </Button>
+              {generatedVideoUrl && !generatedVideoUrl.includes("demo-video.mp4") && (
                 <Button 
-                  className="flex-grow bg-animai-purple hover:bg-animai-lightpurple text-white"
-                  onClick={generateVideo}
-                  disabled={isGenerating || !uploadedImage}
+                  className="bg-animai-pink hover:bg-animai-pink/80 text-white"
+                  onClick={downloadVideo}
                 >
-                  {isGenerating ? generationStatus : "Generate Video"}
+                  <Download className="w-4 h-4 mr-2" /> Save
                 </Button>
-                {generatedVideoUrl && !generatedVideoUrl.includes("demo-video.mp4") && (
-                  <Button 
-                    className="bg-animai-pink hover:bg-animai-pink/80 text-white"
-                    onClick={downloadVideo}
-                  >
-                    <Download className="w-4 h-4 mr-2" /> Save
-                  </Button>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </div>
