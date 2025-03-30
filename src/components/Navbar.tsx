@@ -1,22 +1,8 @@
-
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-
 const Navbar = () => {
-  const location = useLocation();
   const [activeItem, setActiveItem] = useState('home');
-  
-  useEffect(() => {
-    // Set active item based on current path
-    const path = location.pathname;
-    if (path === '/') {
-      setActiveItem('home');
-    } else if (path === '/pricing') {
-      setActiveItem('pricing');
-    }
-  }, [location.pathname]);
-
   const navItems = [{
     id: 'home',
     label: 'Home',
@@ -26,7 +12,6 @@ const Navbar = () => {
     label: 'Pricing',
     path: '/pricing'
   }];
-
   return <nav className="w-full flex items-center justify-between py-4 px-8 animai-glass z-10">
       <div className="flex items-center gap-3">
         <img src="/lovable-uploads/2123f088-be33-4104-9220-dea299996ab5.png" alt="Animai Logo" className="h-12 w-12 object-contain" />
@@ -58,5 +43,4 @@ const Navbar = () => {
       </Button>
     </nav>;
 };
-
 export default Navbar;
