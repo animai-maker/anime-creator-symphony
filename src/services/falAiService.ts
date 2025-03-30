@@ -33,6 +33,8 @@ export const generateVideoFromImage = async (
       onStatusUpdate("Generating video...");
     }
 
+    console.log("Calling Supabase Edge Function with options:", options);
+
     // Call the Supabase Edge Function
     const { data, error } = await supabase.functions.invoke('generate-video', {
       body: options
@@ -44,10 +46,13 @@ export const generateVideoFromImage = async (
       throw error;
     }
 
+    console.log("Edge function response:", data);
+
     if (onStatusUpdate) {
       onStatusUpdate("Video generation complete!");
     }
 
+    toast.success("Video generated successfully!");
     return data.videoUrl;
   } catch (error: any) {
     console.error("Error generating video:", error);

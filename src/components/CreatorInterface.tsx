@@ -85,6 +85,7 @@ const CreatorInterface = () => {
     setGenerationStatus("Preparing to generate video...");
 
     try {
+      console.log("Starting video generation with image:", uploadedImage);
       const videoUrl = await generateVideoFromImage(
         {
           prompt: animationPrompt,
@@ -96,6 +97,7 @@ const CreatorInterface = () => {
         setGenerationStatus
       );
 
+      console.log("Video generated successfully, URL:", videoUrl);
       setGeneratedVideoUrl(videoUrl);
       toast.success("Video generated successfully!");
     } catch (error) {

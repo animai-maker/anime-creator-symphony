@@ -32,13 +32,19 @@ async function getFalApiKey(supabaseClient) {
 }
 
 serve(async (req) => {
+  console.log("Edge function called with method:", req.method);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { prompt, imageUrl, aspectRatio, resolution, duration, loop } = await req.json();
+    console.log("Processing video generation request");
+    const requestBody = await req.json();
+    console.log("Request body:", requestBody);
+    
+    const { prompt, imageUrl, aspectRatio, resolution, duration, loop } = requestBody;
 
     // Create Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || 'https://guvekmyuzrcmplblidea.supabase.co';
@@ -51,8 +57,10 @@ serve(async (req) => {
     // Get API key from environment or database
     let apiKey = falApiKey;
     if (!apiKey) {
+      console.log("No API key in environment, fetching from database");
       apiKey = await getFalApiKey(supabase);
       if (!apiKey) {
+        console.error("Fal.ai API key not found in either environment or database");
         return new Response(
           JSON.stringify({ error: "Fal.ai API key not found" }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
