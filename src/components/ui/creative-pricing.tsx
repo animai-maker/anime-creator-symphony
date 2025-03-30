@@ -22,12 +22,14 @@ function CreativePricing({
     description = "with flexible, affordable plans. Only pay for what you create.",
     tiers,
     creditInfo,
+    signupFormUrl = "https://docs.google.com/forms/d/e/1FAIpQLSdMBgOyP2toCDKGPRZ0Dl0iVkb-eeZJ3hnkxnqI71UPzzWoTQ/viewform?usp=sharing"
 }: {
     tag?: string;
     title?: string;
     description?: string;
     tiers: PricingTier[];
     creditInfo?: React.ReactNode;
+    signupFormUrl?: string;
 }) {
     return (
         <div className="w-full max-w-6xl mx-auto px-4 py-16">
@@ -171,31 +173,37 @@ function CreativePricing({
                                 ))}
                             </div>
 
-                            <Button
-                                className={cn(
-                                    "w-full h-12 text-lg font-semibold relative",
-                                    "border-2",
-                                    "transition-all duration-300",
-                                    "shadow-[4px_4px_0px_0px]",
-                                    "hover:shadow-[6px_6px_0px_0px]",
-                                    "hover:translate-x-[-2px] hover:translate-y-[-2px]",
-                                    tier.popular
-                                        ? [
-                                              "border-animai-pink shadow-animai-pink",
-                                              "bg-animai-pink text-white",
-                                              "hover:bg-animai-pink/90",
-                                              "active:bg-animai-pink",
-                                          ]
-                                        : [
-                                              "border-animai-purple shadow-animai-purple",
-                                              "bg-animai-purple text-white",
-                                              "hover:bg-animai-purple/90",
-                                              "active:bg-animai-purple",
-                                          ]
-                                )}
+                            <a 
+                                href={signupFormUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
                             >
-                                Get Started
-                            </Button>
+                                <Button
+                                    className={cn(
+                                        "w-full h-12 text-lg font-semibold relative",
+                                        "border-2",
+                                        "transition-all duration-300",
+                                        "shadow-[4px_4px_0px_0px]",
+                                        "hover:shadow-[6px_6px_0px_0px]",
+                                        "hover:translate-x-[-2px] hover:translate-y-[-2px]",
+                                        tier.popular
+                                            ? [
+                                                  "border-animai-pink shadow-animai-pink",
+                                                  "bg-animai-pink text-white",
+                                                  "hover:bg-animai-pink/90",
+                                                  "active:bg-animai-pink",
+                                              ]
+                                            : [
+                                                  "border-animai-purple shadow-animai-purple",
+                                                  "bg-animai-purple text-white",
+                                                  "hover:bg-animai-purple/90",
+                                                  "active:bg-animai-purple",
+                                              ]
+                                    )}
+                                >
+                                    Get Started
+                                </Button>
+                            </a>
                         </div>
                     </div>
                 ))}
@@ -206,12 +214,18 @@ function CreativePricing({
                 <p className="text-lg mb-6 max-w-2xl mx-auto">
                     Custom enterprise packages available for studios, educators, and game devs.
                 </p>
-                <Button 
-                    variant="outline" 
-                    className="border-2 border-animai-purple text-animai-purple hover:text-white hover:bg-animai-purple"
+                <a 
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSdMBgOyP2toCDKGPRZ0Dl0iVkb-eeZJ3hnkxnqI71UPzzWoTQ/viewform?usp=sharing" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
                 >
-                    Contact Us for a tailored plan
-                </Button>
+                    <Button 
+                        variant="outline" 
+                        className="border-2 border-animai-purple text-animai-purple hover:text-white hover:bg-animai-purple"
+                    >
+                        Contact Us for a tailored plan
+                    </Button>
+                </a>
             </div>
         </div>
     );
