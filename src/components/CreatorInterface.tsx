@@ -1,19 +1,12 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, Play, Pause, Info, Download } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Input } from '@/components/ui/input';
 import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
-import { configureFalClient, generateVideoFromImage } from '@/services/falAiService';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { generateVideoFromImage } from '@/services/falAiService';
 import { toast } from 'sonner';
-
-// In a real app, you'd securely handle API keys via environment variables
-// For this demo, we're handling it in the client for simplicity
-const FAL_API_KEY = "fal_live_nGsQcULSdxzd4NBaaDLmXxRAtdWOQqRaKGfYfpCT"; // This is a demo key, normally you'd use a server-side approach
 
 const CreatorInterface = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -26,16 +19,9 @@ const CreatorInterface = () => {
   const [soundEffectPrompt, setSoundEffectPrompt] = useState<string>("Light Piano or Music Box Melody");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStatus, setGenerationStatus] = useState("");
-  const [showApiFallbackDialog, setShowApiFallbackDialog] = useState(false);
-  const [manualApiKey, setManualApiKey] = useState("");
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Configure fal.ai client
-  useEffect(() => {
-    configureFalClient(FAL_API_KEY);
-  }, []);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -120,21 +106,8 @@ const CreatorInterface = () => {
       toast.success("Video generated successfully!");
     } catch (error) {
       console.error("Failed to generate video:", error);
-      if (error.message?.includes("authentication")) {
-        setShowApiFallbackDialog(true);
-      }
     } finally {
       setIsGenerating(false);
-    }
-  };
-
-  const applyManualApiKey = () => {
-    if (manualApiKey.trim()) {
-      configureFalClient(manualApiKey.trim());
-      setShowApiFallbackDialog(false);
-      toast.success("API key applied, try generating again");
-    } else {
-      toast.error("Please enter a valid API key");
     }
   };
 
@@ -319,31 +292,6 @@ const CreatorInterface = () => {
           </div>
         </div>
       </div>
-
-      {/* API Key Fallback Dialog */}
-      <AlertDialog open={showApiFallbackDialog} onOpenChange={setShowApiFallbackDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>API Key Required</AlertDialogTitle>
-            <AlertDialogDescription>
-              The default API key doesn't seem to be working. Please enter your Fal.ai API key to continue.
-              You can get an API key by signing up at <a href="https://fal.ai" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">fal.ai</a>.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4">
-            <Input
-              type="password"
-              placeholder="Enter your Fal.ai API key"
-              value={manualApiKey}
-              onChange={(e) => setManualApiKey(e.target.value)}
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={applyManualApiKey}>Apply API Key</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>;
 };
 
