@@ -16,7 +16,7 @@ const CreatorInterface = () => {
               <Upload className="w-5 h-5 mr-2" />
               Upload image
             </h3>
-            <div className="relative w-full aspect-square mb-4 overflow-hidden rounded-lg">
+            <div className="relative w-32 h-32 mb-4 overflow-hidden rounded-lg mx-auto">
               <img 
                 src="/lovable-uploads/43127aaf-52fa-4f9f-9315-28d7075b3341.png" 
                 alt="Anime character" 
@@ -87,16 +87,16 @@ const CreatorInterface = () => {
             <h3 className="text-xl font-semibold mb-4 flex items-center">
               Preview
             </h3>
-            <div className="relative w-full aspect-square mb-4 overflow-hidden rounded-lg">
+            <div className="relative w-32 h-32 mb-4 overflow-hidden rounded-lg mx-auto">
               <img 
                 src="/lovable-uploads/43127aaf-52fa-4f9f-9315-28d7075b3341.png" 
                 alt="Anime character preview" 
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-4 left-0 right-0 px-4">
-                <div className="bg-black/30 backdrop-blur-sm rounded-full p-2 flex items-center gap-2">
-                  <Button size="icon" variant="ghost" className="text-white rounded-full h-8 w-8 flex items-center justify-center">
-                    <Play className="w-4 h-4" />
+              <div className="absolute bottom-2 left-0 right-0 px-2">
+                <div className="bg-black/30 backdrop-blur-sm rounded-full p-1 flex items-center gap-1 scale-75">
+                  <Button size="icon" variant="ghost" className="text-white rounded-full h-6 w-6 flex items-center justify-center">
+                    <Play className="w-3 h-3" />
                   </Button>
                   <div className="bg-white/30 h-1 flex-grow rounded-full">
                     <div className="bg-white h-full w-1/3 rounded-full"></div>
