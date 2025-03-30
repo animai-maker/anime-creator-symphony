@@ -12,7 +12,10 @@ import {
   Type, 
   Music, 
   Video,
-  CreditCard
+  CreditCard,
+  Image,
+  Play,
+  FilmIcon
 } from "lucide-react";
 import { 
   Card, 
@@ -25,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 
 const CreateProject = () => {
   const navigate = useNavigate();
@@ -34,6 +38,28 @@ const CreateProject = () => {
   const [loadingCredits, setLoadingCredits] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [animationPrompt, setAnimationPrompt] = useState("");
+  const [soundPrompt, setSoundPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Example animation prompts
+  const animationPrompts = [
+    "The character looks at the sky and smiles",
+    "The character turns their head and blinks",
+    "The character's hair flows in the wind gently",
+    "The character laughs heartily",
+    "The character looks surprised and takes a step back"
+  ];
+
+  // Example sound prompts
+  const soundPrompts = [
+    "Soft piano melody with birds chirping",
+    "Light orchestral music with wind sounds",
+    "Dramatic orchestral build-up with violins",
+    "Gentle acoustic guitar with rainfall",
+    "Cheerful upbeat tune with bell sounds"
+  ];
 
   useEffect(() => {
     const getUser = async () => {
@@ -77,7 +103,10 @@ const CreateProject = () => {
         .eq('id', userId)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user credits:', error);
+        throw error;
+      }
       
       if (data) {
         setCredits(data.credits);
@@ -90,54 +119,57 @@ const CreateProject = () => {
     }
   };
 
-  const projectOptions = [
-    {
-      id: 'video',
-      title: 'Video Animation',
-      icon: <Video className="h-10 w-10 text-animai-purple" />,
-      description: 'Generate a full anime-style animated video',
-      credits: 15
-    },
-    {
-      id: 'character',
-      title: 'Character Design',
-      icon: <Type className="h-10 w-10 text-animai-pink" />,
-      description: 'Create a custom anime character with detailed features',
-      credits: 5
-    },
-    {
-      id: 'music',
-      title: 'Music Generation',
-      icon: <Music className="h-10 w-10 text-animai-purple" />,
-      description: 'Generate custom background music for your anime',
-      credits: 5
-    },
-    {
-      id: 'assets',
-      title: 'Scene Assets',
-      icon: <Upload className="h-10 w-10 text-animai-pink" />,
-      description: 'Create backgrounds and environment elements',
-      credits: 8
+  const handleUploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setUploadedImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  ];
+  };
 
-  const handleCreateProject = (type: string) => {
-    if (!projectName.trim()) {
-      toast.error("Please enter a project name");
+  const handleAnimationPromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAnimationPrompt(e.target.value);
+  };
+
+  const handleAnimationPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("Animation prompt submitted:", animationPrompt);
+    // Would trigger the animation generation API here
+    toast.success("Animation prompt submitted!");
+  };
+
+  const handleSoundPromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSoundPrompt(e.target.value);
+  };
+
+  const handleSoundPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log("Sound prompt submitted:", soundPrompt);
+    // Would trigger the sound generation API here
+    toast.success("Sound prompt submitted!");
+  };
+
+  const handleGenerate = () => {
+    if (!uploadedImage) {
+      toast.error("Please upload an image first");
       return;
     }
     
-    // Get the credits required for this project type
-    const projectType = projectOptions.find(option => option.id === type);
-    const requiredCredits = projectType?.credits || 0;
-    
-    if (credits < requiredCredits) {
-      toast.error(`Not enough credits! You need ${requiredCredits} credits for this project.`);
+    if (!animationPrompt) {
+      toast.error("Please enter an animation prompt");
       return;
     }
     
-    toast.success(`Started new ${projectType?.title} project: ${projectName}`);
-    // In a real app, you would create the project in the database and deduct credits
+    setIsGenerating(true);
+    
+    // Simulate generation process
+    setTimeout(() => {
+      setIsGenerating(false);
+      toast.success("Animation generated successfully!");
+    }, 3000);
   };
 
   if (loading) {
@@ -158,11 +190,11 @@ const CreateProject = () => {
     <div className="min-h-screen bg-animai">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="mb-8 flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-animai-navy">Create New Project</h1>
-              <p className="text-gray-600">Choose a project type to get started</p>
+              <p className="text-gray-600">Turn your images into animated videos</p>
             </div>
             
             <div className="bg-white/90 backdrop-blur-sm rounded-lg px-5 py-3 flex items-center shadow-md">
@@ -191,69 +223,155 @@ const CreateProject = () => {
                 onChange={(e) => setProjectName(e.target.value)}
               />
             </div>
-            
-            <div className="mb-6">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Textarea 
-                id="description" 
-                placeholder="Describe your project" 
-                className="mt-1"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {projectOptions.map(option => (
-              <Card key={option.id} className="overflow-hidden border-2 border-transparent hover:border-animai-purple/30 transition-all">
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div className="p-2 bg-gray-100 rounded-md">
-                      {option.icon}
-                    </div>
-                    <div className="flex items-center px-3 py-1 bg-animai-purple/10 rounded-full">
-                      <CreditCard className="h-4 w-4 text-animai-purple mr-1" />
-                      <span className="text-sm font-semibold text-animai-purple">{option.credits} credits</span>
-                    </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Upload Section */}
+            <Card className="bg-white/90 backdrop-blur-sm overflow-hidden border-2 border-transparent">
+              <CardHeader>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="p-2 bg-gray-100 rounded-md">
+                    <Image className="h-6 w-6 text-animai-purple" />
                   </div>
-                  <CardTitle className="mt-2">{option.title}</CardTitle>
-                  <CardDescription>{option.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-gray-500 space-y-2">
-                    <div className="flex items-start">
-                      <div className="h-5 w-5 rounded-full bg-animai-purple/20 flex items-center justify-center text-animai-purple mr-2 mt-0.5">✓</div>
-                      <span>High-quality output</span>
+                </div>
+                <CardTitle>Upload Image</CardTitle>
+                <CardDescription>Upload an image to animate</CardDescription>
+              </CardHeader>
+              <CardContent className="flex flex-col items-center">
+                <div className="relative w-full aspect-square mb-4 overflow-hidden rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                  {uploadedImage ? (
+                    <img 
+                      src={uploadedImage} 
+                      alt="Uploaded" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-center p-4">
+                      <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Click to upload or drag and drop</p>
+                      <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
                     </div>
-                    <div className="flex items-start">
-                      <div className="h-5 w-5 rounded-full bg-animai-purple/20 flex items-center justify-center text-animai-purple mr-2 mt-0.5">✓</div>
-                      <span>Full customization</span>
-                    </div>
+                  )}
+                  <input 
+                    type="file" 
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                    onChange={handleUploadImage}
+                    accept="image/*"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  variant="outline"
+                  className="w-full border-2 border-animai-purple text-animai-purple hover:bg-animai-purple hover:text-white"
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  {uploadedImage ? 'Change Image' : 'Upload Image'}
+                </Button>
+                <input 
+                  id="image-upload" 
+                  type="file" 
+                  className="hidden" 
+                  onChange={handleUploadImage}
+                  accept="image/*"
+                />
+              </CardFooter>
+            </Card>
+
+            {/* Animate Section */}
+            <Card className="bg-white/90 backdrop-blur-sm overflow-hidden border-2 border-transparent">
+              <CardHeader>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="p-2 bg-gray-100 rounded-md">
+                    <FilmIcon className="h-6 w-6 text-animai-pink" />
                   </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    onClick={() => handleCreateProject(option.id)}
-                    className="w-full bg-animai-purple hover:bg-animai-lightpurple"
-                    disabled={credits < option.credits}
-                  >
-                    {credits < option.credits ? 'Not Enough Credits' : 'Start Project'}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-          
-          <div className="text-center">
-            <p className="text-gray-600 mb-4">Need more credits to create your project?</p>
-            <Button 
-              onClick={() => navigate('/pricing')} 
-              variant="outline" 
-              className="border-2 border-animai-purple text-animai-purple hover:bg-animai-purple hover:text-white"
-            >
-              Get More Credits
-            </Button>
+                </div>
+                <CardTitle>Animation Prompt</CardTitle>
+                <CardDescription>Describe how you want your image to be animated</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-4">
+                  <Label>Animation Prompt</Label>
+                  <div className="mt-2">
+                    <PlaceholdersAndVanishInput
+                      placeholders={animationPrompts}
+                      onChange={handleAnimationPromptChange}
+                      onSubmit={handleAnimationPromptSubmit}
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  <Label>Sound Effect</Label>
+                  <div className="mt-2">
+                    <PlaceholdersAndVanishInput
+                      placeholders={soundPrompts}
+                      onChange={handleSoundPromptChange}
+                      onSubmit={handleSoundPromptSubmit}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  onClick={handleGenerate}
+                  className="w-full bg-animai-purple hover:bg-animai-lightpurple text-white"
+                  disabled={!uploadedImage || !animationPrompt || isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 mr-2" />
+                      Generate Animation
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+
+            {/* Preview Section */}
+            <Card className="bg-white/90 backdrop-blur-sm overflow-hidden border-2 border-transparent">
+              <CardHeader>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="p-2 bg-gray-100 rounded-md">
+                    <Video className="h-6 w-6 text-animai-purple" />
+                  </div>
+                </div>
+                <CardTitle>Preview</CardTitle>
+                <CardDescription>Preview your animated creation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="relative w-full aspect-square rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                  <div className="text-center p-4">
+                    <Play className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                    <p className="text-sm text-gray-500">Your animation will appear here</p>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-between">
+                <Button 
+                  variant="outline" 
+                  className="border-animai-purple text-animai-purple"
+                  disabled={true}
+                >
+                  <Music className="h-4 w-4 mr-2" />
+                  Add Sound
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="border-animai-purple text-animai-purple"
+                  disabled={true}
+                >
+                  <Video className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         </div>
       </main>

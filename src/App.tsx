@@ -7,7 +7,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
-import Dashboard from "./pages/Dashboard";
 import CreateProject from "./pages/CreateProject";
 import React, { useState, useEffect } from "react";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
@@ -75,7 +74,6 @@ const App = () => {
                 <Route path="/explore" element={<Index />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/create" element={<CreateProject />} />
-                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/about" element={<Index />} />
                 <Route path="/contact" element={<Index />} />
                 <Route path="*" element={<NotFound />} />

@@ -30,11 +30,6 @@ const Navbar = () => {
   
   const privateNavItems = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
-      path: '/dashboard'
-    }, 
-    {
       id: 'create',
       label: 'Create Project',
       path: '/create'
@@ -53,7 +48,13 @@ const Navbar = () => {
         setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
         console.log("Initial session check:", session?.user?.email || "No session");
-        setUser(session?.user || null);
+        if (session?.user) {
+          console.log("Setting user from session check", session.user.email);
+          setUser(session.user);
+        } else {
+          console.log("No user found in session check");
+          setUser(null);
+        }
       } catch (error) {
         console.error("Error checking session:", error);
       } finally {
@@ -67,11 +68,18 @@ const Navbar = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);
-        setUser(session?.user || null);
+        
+        if (session?.user) {
+          console.log("Setting user from auth state change", session.user.email);
+          setUser(session.user);
+        } else {
+          console.log("Clearing user from auth state change");
+          setUser(null);
+        }
         
         // Navigate to dashboard on sign in
         if (event === 'SIGNED_IN' && session) {
-          navigate('/dashboard');
+          navigate('/create');
           toast.success(`Welcome ${session.user.email?.split('@')[0] || 'back'}!`);
         } else if (event === 'SIGNED_OUT') {
           navigate('/');
@@ -80,15 +88,24 @@ const Navbar = () => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log("Cleaning up auth subscription");
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   // Update activeItem based on current path whenever location changes
   useEffect(() => {
     const path = location.pathname;
-    const currentNavItems = user ? privateNavItems : publicNavItems;
-    const matchingItem = currentNavItems.find(item => item.path === path);
+    console.log("Current path:", path);
+    console.log("Current user:", user ? "Logged in" : "Not logged in");
+    
+    const navItems = user ? privateNavItems : publicNavItems;
+    console.log("Nav items:", navItems.map(item => item.label).join(", "));
+    
+    const matchingItem = navItems.find(item => item.path === path);
     if (matchingItem) {
+      console.log("Setting active item to:", matchingItem.id);
       setActiveItem(matchingItem.id);
     }
   }, [location.pathname, user]);
@@ -99,7 +116,7 @@ const Navbar = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/create`,
         },
       });
 
@@ -122,6 +139,7 @@ const Navbar = () => {
   const handleSignOut = async () => {
     try {
       setAuthLoading(true);
+      console.log("Signing out");
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -138,11 +156,12 @@ const Navbar = () => {
     }
   };
 
-  // Get the correct navigation items based on authentication state
-  const currentNavItems = user ? privateNavItems : publicNavItems;
+  // Get the correct navigation items based on authentication status
+  const navItems = user ? privateNavItems : publicNavItems;
 
-  console.log("Auth state in Navbar:", user ? "Authenticated" : "Not authenticated");
-  console.log("Showing nav items:", user ? "Private" : "Public");
+  console.log("Auth state in Navbar render:", user ? "Authenticated" : "Not authenticated");
+  console.log("Showing nav items in render:", user ? "Private" : "Public");
+  console.log("Current nav items:", navItems.map(item => item.label).join(", "));
 
   return (
     <nav className="w-full flex items-center justify-between py-4 px-8 animai-glass z-10">
@@ -153,12 +172,12 @@ const Navbar = () => {
 
       <div className="hidden md:flex items-center gap-8 relative">
         <div className="absolute inset-0 h-full rounded-full bg-white/10 backdrop-blur-lg -z-10 tubelight" style={{
-          width: `${100 / currentNavItems.length}%`,
-          transform: `translateX(${currentNavItems.findIndex(item => item.id === activeItem) * 100}%)`,
+          width: `${100 / navItems.length}%`,
+          transform: `translateX(${navItems.findIndex(item => item.id === activeItem) * 100}%)`,
           transition: 'transform 0.3s ease'
         }} />
         
-        {currentNavItems.map(item => (
+        {navItems.map(item => (
           <Link 
             key={item.id} 
             to={item.path} 
