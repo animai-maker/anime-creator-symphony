@@ -19,6 +19,16 @@ interface ImageToVideoOptions {
   loop?: boolean;
 }
 
+// Define a proper type for the status response
+type QueueStatus = "IN_QUEUE" | "IN_PROGRESS" | "COMPLETED" | "FAILED" | "CANCELED";
+
+interface QueueStatusResponse {
+  status: QueueStatus;
+  error?: {
+    message: string;
+  };
+}
+
 export const generateVideoFromImage = async (
   options: ImageToVideoOptions,
   onStatusUpdate?: (status: string) => void
@@ -59,18 +69,15 @@ export const generateVideoFromImage = async (
       const status = await fal.queue.status("fal-ai/luma-dream-machine/ray-2-flash/image-to-video", {
         requestId: request_id,
         logs: true,
-      });
+      }) as QueueStatusResponse;
 
-      // Fix for the type issue - check against expected status values with type guards
       if (status.status === "COMPLETED") {
         result = await fal.queue.result("fal-ai/luma-dream-machine/ray-2-flash/image-to-video", {
           requestId: request_id,
         });
         break;
       } else if (status.status === "FAILED" || status.status === "CANCELED") {
-        // Fix: Cast status to 'any' to access error property or use a safer approach with optional chaining
-        const statusAny = status as any;
-        const errorMessage = statusAny.error?.message || "Unknown error";
+        const errorMessage = status.error?.message || "Unknown error";
         throw new Error("Video generation failed: " + errorMessage);
       }
 
