@@ -8,11 +8,27 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import Dashboard from "./pages/Dashboard";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './lib/supabase';
 
 const App = () => {
+  const [isSupabaseReady, setIsSupabaseReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Simple check to see if Supabase client is initialized
+    try {
+      // Just checking if we can access the auth object without errors
+      if (supabase && supabase.auth) {
+        setIsSupabaseReady(true);
+      }
+    } catch (err) {
+      console.error("Error initializing Supabase client:", err);
+      setError("Failed to initialize Supabase client. Check console for details.");
+    }
+  }, []);
+
   // Create a client
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -21,6 +37,28 @@ const App = () => {
       },
     },
   });
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-50">
+        <div className="p-6 max-w-sm bg-white rounded-lg border border-red-200 shadow-md">
+          <h2 className="text-xl font-bold text-red-700 mb-2">Application Error</h2>
+          <p className="text-gray-700">{error}</p>
+          <p className="mt-4 text-sm text-gray-500">
+            Please check your environment variables and refresh the page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isSupabaseReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-animai-purple"></div>
+      </div>
+    );
+  }
 
   return (
     <React.StrictMode>
