@@ -1,17 +1,41 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Play, Pause, Info } from 'lucide-react';
+import { Upload, Play, Pause, Info, Download } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Input } from '@/components/ui/input';
+import { PlaceholdersAndVanishInput } from '@/components/ui/placeholders-and-vanish-input';
+import { configureFalClient, generateVideoFromImage } from '@/services/falAiService';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+
+// In a real app, you'd securely handle API keys via environment variables
+// For this demo, we're handling it in the client for simplicity
+const FAL_API_KEY = "fal_live_nGsQcULSdxzd4NBaaDLmXxRAtdWOQqRaKGfYfpCT"; // This is a demo key, normally you'd use a server-side approach
 
 const CreatorInterface = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [generatedVideoUrl, setGeneratedVideoUrl] = useState<string | null>("/demo-video.mp4");
+  const [animationPrompt, setAnimationPrompt] = useState<string>("A high school girl stands on a hill at sunset, her hair gently swaying in the breeze as she gazes into the distance, calm and thoughtful. The sky glows in warm hues with drifting clouds and floating light particles, while the camera slowly pans around her, capturing the golden-hour magic.");
+  const [soundEffectPrompt, setSoundEffectPrompt] = useState<string>("Light Piano or Music Box Melody");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState("");
+  const [showApiFallbackDialog, setShowApiFallbackDialog] = useState(false);
+  const [manualApiKey, setManualApiKey] = useState("");
+  
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Configure fal.ai client
+  useEffect(() => {
+    configureFalClient(FAL_API_KEY);
+  }, []);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -46,6 +70,85 @@ const CreatorInterface = () => {
     }
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setUploadedImage(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAnimationPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // The PlaceholdersAndVanishInput component will handle the animation
+  };
+
+  const generateVideo = async () => {
+    if (!uploadedImage) {
+      toast.error("Please upload an image first");
+      return;
+    }
+
+    if (!animationPrompt) {
+      toast.error("Please provide an animation prompt");
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationStatus("Preparing to generate video...");
+
+    try {
+      const videoUrl = await generateVideoFromImage(
+        {
+          prompt: animationPrompt,
+          imageUrl: uploadedImage,
+          aspectRatio: "16:9",
+          resolution: "540p",
+          duration: "5s",
+        },
+        setGenerationStatus
+      );
+
+      setGeneratedVideoUrl(videoUrl);
+      toast.success("Video generated successfully!");
+    } catch (error) {
+      console.error("Failed to generate video:", error);
+      if (error.message?.includes("authentication")) {
+        setShowApiFallbackDialog(true);
+      }
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const applyManualApiKey = () => {
+    if (manualApiKey.trim()) {
+      configureFalClient(manualApiKey.trim());
+      setShowApiFallbackDialog(false);
+      toast.success("API key applied, try generating again");
+    } else {
+      toast.error("Please enter a valid API key");
+    }
+  };
+
+  const downloadVideo = () => {
+    if (!generatedVideoUrl) return;
+    
+    const link = document.createElement('a');
+    link.href = generatedVideoUrl;
+    link.download = 'generated-animation.mp4';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Format time to MM:SS
   const formatTime = (seconds: number) => {
     if (isNaN(seconds)) return '0:00';
@@ -56,6 +159,14 @@ const CreatorInterface = () => {
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  // Animation prompt suggestions
+  const animationPromptPlaceholders = [
+    "A high school girl stands on a hill at sunset...",
+    "A boy with spiky hair runs through a futuristic cityscape...",
+    "A magical girl transforms with sparkles and light effects...",
+    "A samurai meditates under a cherry blossom tree..."
+  ];
+
   return <div className="w-full max-w-6xl mx-auto py-8">
       <div className="animai-glass p-8 rounded-3xl">
         <div className="flex flex-col md:flex-row items-center justify-center gap-8">
@@ -63,14 +174,28 @@ const CreatorInterface = () => {
           <div className="flex flex-col items-center">
             <div className="bg-white p-3 pb-12 rounded-md shadow-lg transform rotate-[-2deg] transition-transform hover:rotate-0 duration-300">
               <div className="relative w-48 h-48 mb-1 overflow-hidden">
-                <img src="/lovable-uploads/43127aaf-52fa-4f9f-9315-28d7075b3341.png" alt="Anime character" className="w-full h-full object-cover" />
+                <img 
+                  src={uploadedImage || "/lovable-uploads/43127aaf-52fa-4f9f-9315-28d7075b3341.png"} 
+                  alt="Anime character" 
+                  className="w-full h-full object-cover" 
+                />
               </div>
               <p className="text-center font-handwritten text-lg text-animai-navy -rotate-2 mt-2">
-                Uploaded Image
+                {uploadedImage ? "Your Image" : "Upload Image"}
               </p>
             </div>
-            <Button className="w-full mt-4 bg-gray-100 text-gray-700 hover:bg-gray-200">
-              Upload Image
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={handleImageUpload} 
+            />
+            <Button 
+              className="w-full mt-4 bg-gray-100 text-gray-700 hover:bg-gray-200"
+              onClick={triggerFileInput}
+            >
+              <Upload className="w-4 h-4 mr-2" /> Upload Image
             </Button>
           </div>
 
@@ -111,11 +236,11 @@ const CreatorInterface = () => {
               <div className="font-handwritten text-lg text-animai-navy space-y-4 mt-4">
                 <div>
                   <h3 className="font-semibold text-animai-purple mb-2">Animation prompt:</h3>
-                  <p>A high school girl stands on a hill at sunset, her hair gently swaying in the breeze as she gazes into the distance, calm and thoughtful. The sky glows in warm hues with drifting clouds and floating light particles, while the camera slowly pans around her, capturing the golden-hour magic.</p>
+                  <p>{animationPrompt}</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-animai-pink mb-2">Sound Effect prompt:</h3>
-                  <p>Light Piano or Music Box Melody</p>
+                  <p>{soundEffectPrompt}</p>
                 </div>
               </div>
             </DialogContent>
@@ -127,7 +252,7 @@ const CreatorInterface = () => {
               <div className="relative w-48 h-48 mb-1 overflow-hidden">
                 <video 
                   ref={videoRef}
-                  src="/demo-video.mp4" 
+                  src={generatedVideoUrl} 
                   className="w-full h-full object-cover"
                   loop
                   onClick={togglePlayback}
@@ -165,12 +290,60 @@ const CreatorInterface = () => {
                 Generated Video
               </p>
             </div>
-            <Button className="w-full mt-4 bg-animai-purple hover:bg-animai-lightpurple text-white">
-              Generate Video
-            </Button>
+            <div className="w-full mt-4 flex flex-col gap-2">
+              <div className="w-full">
+                <PlaceholdersAndVanishInput
+                  placeholders={animationPromptPlaceholders}
+                  onChange={(e) => setAnimationPrompt(e.target.value)}
+                  onSubmit={handleAnimationPromptSubmit}
+                />
+              </div>
+              <div className="flex gap-2 w-full">
+                <Button 
+                  className="flex-grow bg-animai-purple hover:bg-animai-lightpurple text-white"
+                  onClick={generateVideo}
+                  disabled={isGenerating || !uploadedImage}
+                >
+                  {isGenerating ? generationStatus : "Generate Video"}
+                </Button>
+                {generatedVideoUrl && !generatedVideoUrl.includes("demo-video.mp4") && (
+                  <Button 
+                    className="bg-animai-pink hover:bg-animai-pink/80 text-white"
+                    onClick={downloadVideo}
+                  >
+                    <Download className="w-4 h-4 mr-2" /> Save
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* API Key Fallback Dialog */}
+      <AlertDialog open={showApiFallbackDialog} onOpenChange={setShowApiFallbackDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>API Key Required</AlertDialogTitle>
+            <AlertDialogDescription>
+              The default API key doesn't seem to be working. Please enter your Fal.ai API key to continue.
+              You can get an API key by signing up at <a href="https://fal.ai" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">fal.ai</a>.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Input
+              type="password"
+              placeholder="Enter your Fal.ai API key"
+              value={manualApiKey}
+              onChange={(e) => setManualApiKey(e.target.value)}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={applyManualApiKey}>Apply API Key</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>;
 };
 
