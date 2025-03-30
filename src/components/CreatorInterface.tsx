@@ -59,7 +59,6 @@ const CreatorInterface = () => {
                   src="/demo-video.mp4" 
                   className="w-full h-full object-cover"
                   loop
-                  muted
                   onClick={togglePlayback}
                 />
                 <div className="absolute bottom-2 left-0 right-0 px-2">
