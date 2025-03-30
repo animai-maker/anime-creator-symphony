@@ -9,6 +9,7 @@ const Navbar = () => {
   const [activeItem, setActiveItem] = useState('home');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -53,17 +54,27 @@ const Navbar = () => {
 
   const handleSignInWithGoogle = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      setAuthLoading(true);
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
-      if (error) throw error;
-    } catch (error) {
+      if (error) {
+        toast.error('Failed to sign in with Google: ' + error.message);
+        throw error;
+      }
+      
+      // The redirect will happen automatically
+      toast.success('Signing in with Google...');
+      
+    } catch (error: any) {
       console.error('Error signing in with Google:', error);
       toast.error('Could not sign in with Google. Please try again.');
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -97,8 +108,14 @@ const Navbar = () => {
       <Button 
         className="bg-animai-purple hover:bg-animai-lightpurple text-white font-medium hidden md:flex items-center gap-2"
         onClick={handleCreateClick}
+        disabled={authLoading}
       >
-        {user ? (
+        {authLoading ? (
+          <>
+            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+            Signing in...
+          </>
+        ) : user ? (
           <>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"></path>

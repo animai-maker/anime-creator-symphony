@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
+import { LogOut, User } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [signOutLoading, setSignOutLoading] = useState(false);
 
   useEffect(() => {
     const getUser = async () => {
@@ -21,6 +23,7 @@ const Dashboard = () => {
         setUser(session.user);
       } else {
         navigate('/');
+        toast.error("Please sign in to access the dashboard");
       }
       setLoading(false);
     };
@@ -43,12 +46,20 @@ const Dashboard = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      setSignOutLoading(true);
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        throw error;
+      }
+      
       toast.success("Signed out successfully");
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error signing out:", error);
-      toast.error("Error signing out");
+      toast.error("Error signing out: " + error.message);
+    } finally {
+      setSignOutLoading(false);
     }
   };
 
@@ -74,22 +85,38 @@ const Dashboard = () => {
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold text-animai-navy">Creator Dashboard</h1>
             <Button 
-              variant="anime-purple" 
+              variant="destructive" 
               onClick={handleSignOut}
               className="flex items-center gap-2"
+              disabled={signOutLoading}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-              Sign Out
+              {signOutLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  Signing out...
+                </>
+              ) : (
+                <>
+                  <LogOut size={18} />
+                  Sign Out
+                </>
+              )}
             </Button>
           </div>
           
           <div className="mb-8">
             <div className="p-6 bg-gray-50 rounded-lg">
-              <h2 className="text-xl font-semibold mb-4 text-animai-navy">Welcome, {user?.email || user?.user_metadata?.full_name || 'Creator'}!</h2>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 rounded-full bg-animai-purple flex items-center justify-center text-white">
+                  <User size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-animai-navy">
+                    Welcome, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Creator'}!
+                  </h2>
+                  <p className="text-gray-600">{user?.email}</p>
+                </div>
+              </div>
               <p className="text-gray-700">
                 This is your personal dashboard where you can manage your Animai creations.
               </p>
