@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Upload, Mic, Music, Play, Volume2 } from 'lucide-react';
+import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 
 const CreatorInterface = () => {
   return (
@@ -37,15 +37,18 @@ const CreatorInterface = () => {
                 Voiceover
               </h3>
               <div className="space-y-4">
-                <Input 
-                  placeholder="What should the character say or do?" 
-                  className="w-full border border-gray-200"
+                <AIInputWithLoading
+                  placeholder="What should the character say or do?"
+                  minHeight={56}
+                  maxHeight={120}
+                  className="p-0"
                 />
                 <div className="flex items-center justify-between">
                   <Button variant="outline" className="flex items-center gap-2">
-                    Add
+                    Upload
                     <Mic className="w-4 h-4" />
                   </Button>
+                  <span className="text-xs text-gray-500">or generate with AI</span>
                 </div>
               </div>
             </div>
@@ -57,6 +60,12 @@ const CreatorInterface = () => {
                 Music
               </h3>
               <div className="space-y-6">
+                <AIInputWithLoading
+                  placeholder="Describe the mood or type of music..."
+                  minHeight={56}
+                  maxHeight={120}
+                  className="p-0"
+                />
                 <div className="flex justify-between gap-2">
                   <Button variant="outline" className="flex-1 flex items-center justify-center gap-2 h-16 bg-gray-50">
                     <div className="text-animai-purple">♪</div>
@@ -70,6 +79,13 @@ const CreatorInterface = () => {
                     <div className="text-animai-purple">♬</div>
                     Calm
                   </Button>
+                </div>
+                <div className="flex justify-between">
+                  <Button variant="outline" className="flex items-center gap-2">
+                    Upload
+                    <Music className="w-4 h-4" />
+                  </Button>
+                  <span className="text-xs text-gray-500">or select/generate with AI</span>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-2">
