@@ -48,16 +48,22 @@ const Navbar = () => {
 
   // Check authentication status when component mounts
   useEffect(() => {
-    const getUser = async () => {
-      setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Initial session check:", session?.user?.email || "No session");
-      setUser(session?.user || null);
-      setLoading(false);
+    const checkAuthStatus = async () => {
+      try {
+        setLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Initial session check:", session?.user?.email || "No session");
+        setUser(session?.user || null);
+      } catch (error) {
+        console.error("Error checking session:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    getUser();
+    checkAuthStatus();
 
+    // Set up the auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log("Auth state changed:", event, session?.user?.email);
@@ -80,8 +86,8 @@ const Navbar = () => {
   // Update activeItem based on current path whenever location changes
   useEffect(() => {
     const path = location.pathname;
-    const navItems = user ? privateNavItems : publicNavItems;
-    const matchingItem = navItems.find(item => item.path === path);
+    const currentNavItems = user ? privateNavItems : publicNavItems;
+    const matchingItem = currentNavItems.find(item => item.path === path);
     if (matchingItem) {
       setActiveItem(matchingItem.id);
     }
@@ -132,8 +138,11 @@ const Navbar = () => {
     }
   };
 
-  // Always use the correct nav items based on current authentication state
-  const navItems = user ? privateNavItems : publicNavItems;
+  // Get the correct navigation items based on authentication state
+  const currentNavItems = user ? privateNavItems : publicNavItems;
+
+  console.log("Auth state in Navbar:", user ? "Authenticated" : "Not authenticated");
+  console.log("Showing nav items:", user ? "Private" : "Public");
 
   return (
     <nav className="w-full flex items-center justify-between py-4 px-8 animai-glass z-10">
@@ -144,12 +153,12 @@ const Navbar = () => {
 
       <div className="hidden md:flex items-center gap-8 relative">
         <div className="absolute inset-0 h-full rounded-full bg-white/10 backdrop-blur-lg -z-10 tubelight" style={{
-          width: `${100 / navItems.length}%`,
-          transform: `translateX(${navItems.findIndex(item => item.id === activeItem) * 100}%)`,
+          width: `${100 / currentNavItems.length}%`,
+          transform: `translateX(${currentNavItems.findIndex(item => item.id === activeItem) * 100}%)`,
           transition: 'transform 0.3s ease'
         }} />
         
-        {navItems.map(item => (
+        {currentNavItems.map(item => (
           <Link 
             key={item.id} 
             to={item.path} 
