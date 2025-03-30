@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { 
   Loader2, 
   Upload, 
-  Type, 
   Music, 
   Video,
   CreditCard,
@@ -25,9 +24,6 @@ import {
   CardContent,
   CardFooter
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 
 const CreateProject = () => {
@@ -36,8 +32,6 @@ const CreateProject = () => {
   const [loading, setLoading] = useState(true);
   const [credits, setCredits] = useState(40);
   const [loadingCredits, setLoadingCredits] = useState(false);
-  const [projectName, setProjectName] = useState("");
-  const [description, setDescription] = useState("");
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [animationPrompt, setAnimationPrompt] = useState("");
   const [soundPrompt, setSoundPrompt] = useState("");
@@ -105,7 +99,7 @@ const CreateProject = () => {
       
       if (error) {
         console.error('Error fetching user credits:', error);
-        throw error;
+        // Don't throw error, just continue with default credits
       }
       
       if (data) {
@@ -113,7 +107,7 @@ const CreateProject = () => {
       }
     } catch (error: any) {
       console.error('Error fetching user credits:', error);
-      toast.error('Could not fetch your credits. Please refresh the page.');
+      // Don't show toast error, just continue with default credits
     } finally {
       setLoadingCredits(false);
     }
@@ -134,22 +128,18 @@ const CreateProject = () => {
     setAnimationPrompt(e.target.value);
   };
 
+  const handleSoundPromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSoundPrompt(e.target.value);
+  };
+
   const handleAnimationPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Animation prompt submitted:", animationPrompt);
-    // Would trigger the animation generation API here
-    toast.success("Animation prompt submitted!");
-  };
-
-  const handleSoundPromptChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSoundPrompt(e.target.value);
   };
 
   const handleSoundPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Sound prompt submitted:", soundPrompt);
-    // Would trigger the sound generation API here
-    toast.success("Sound prompt submitted!");
   };
 
   const handleGenerate = () => {
@@ -193,7 +183,7 @@ const CreateProject = () => {
         <div className="max-w-6xl mx-auto">
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-animai-navy">Create New Project</h1>
+              <h1 className="text-3xl font-bold text-animai-navy">Create New Animation</h1>
               <p className="text-gray-600">Turn your images into animated videos</p>
             </div>
             
@@ -209,19 +199,6 @@ const CreateProject = () => {
                   )}
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-6 mb-8">
-            <div className="mb-6">
-              <Label htmlFor="project-name">Project Name</Label>
-              <Input 
-                id="project-name" 
-                placeholder="Enter your project name" 
-                className="mt-1"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-              />
             </div>
           </div>
 
@@ -292,7 +269,6 @@ const CreateProject = () => {
               </CardHeader>
               <CardContent>
                 <div className="mb-4">
-                  <Label>Animation Prompt</Label>
                   <div className="mt-2">
                     <PlaceholdersAndVanishInput
                       placeholders={animationPrompts}
@@ -303,7 +279,7 @@ const CreateProject = () => {
                 </div>
                 
                 <div className="mt-6">
-                  <Label>Sound Effect</Label>
+                  <p className="mb-2 text-sm font-medium">Sound Effect</p>
                   <div className="mt-2">
                     <PlaceholdersAndVanishInput
                       placeholders={soundPrompts}
