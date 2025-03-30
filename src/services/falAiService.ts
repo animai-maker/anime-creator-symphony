@@ -61,14 +61,16 @@ export const generateVideoFromImage = async (
         logs: true,
       });
 
+      // Fix for the type issue - check against expected status values with type guards
       if (status.status === "COMPLETED") {
         result = await fal.queue.result("fal-ai/luma-dream-machine/ray-2-flash/image-to-video", {
           requestId: request_id,
         });
         break;
-      } else if (status.status === "FAILED") {
-        // Fixed: Using correct error property access pattern
-        const errorMessage = status.error?.message || "Unknown error";
+      } else if (status.status === "FAILED" || status.status === "CANCELED") {
+        // Fix: Cast status to 'any' to access error property or use a safer approach with optional chaining
+        const statusAny = status as any;
+        const errorMessage = statusAny.error?.message || "Unknown error";
         throw new Error("Video generation failed: " + errorMessage);
       }
 
