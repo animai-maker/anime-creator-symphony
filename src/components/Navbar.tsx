@@ -2,9 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, LogOut, CreditCard } from 'lucide-react';
+import { 
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
+import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   const [activeItem, setActiveItem] = useState('home');
@@ -14,13 +23,28 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  const navItems = [{
+  // Different navigation items based on authentication status
+  const publicNavItems = [{
     id: 'home',
     label: 'Home',
     path: '/'
   }, {
     id: 'pricing',
     label: 'Pricing',
+    path: '/pricing'
+  }];
+  
+  const privateNavItems = [{
+    id: 'dashboard',
+    label: 'Dashboard',
+    path: '/dashboard'
+  }, {
+    id: 'create',
+    label: 'Create Project',
+    path: '/create'
+  }, {
+    id: 'plans',
+    label: 'Plans & Billing',
     path: '/pricing'
   }];
 
@@ -44,6 +68,9 @@ const Navbar = () => {
         if (event === 'SIGNED_IN' && session) {
           navigate('/dashboard');
           toast.success(`Welcome ${session.user.email?.split('@')[0] || 'back'}!`);
+        } else if (event === 'SIGNED_OUT') {
+          navigate('/');
+          toast.success('Signed out successfully');
         }
       }
     );
@@ -54,11 +81,12 @@ const Navbar = () => {
   // Update activeItem based on current path whenever location changes
   useEffect(() => {
     const path = location.pathname;
+    const navItems = user ? privateNavItems : publicNavItems;
     const matchingItem = navItems.find(item => item.path === path);
     if (matchingItem) {
       setActiveItem(matchingItem.id);
     }
-  }, [location.pathname]);
+  }, [location.pathname, user]);
 
   const handleSignInWithGoogle = async () => {
     try {
@@ -86,13 +114,35 @@ const Navbar = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    try {
+      setAuthLoading(true);
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        toast.error('Failed to sign out: ' + error.message);
+        throw error;
+      }
+      
+      // The redirect will happen in the auth state change handler
+    } catch (error: any) {
+      console.error('Error signing out:', error);
+      toast.error('Could not sign out. Please try again.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const handleCreateClick = () => {
     if (user) {
-      navigate('/dashboard');
+      navigate('/create');
     } else {
       handleSignInWithGoogle();
     }
   };
+
+  // Determine which navigation items to show based on auth status
+  const navItems = user ? privateNavItems : publicNavItems;
 
   return (
     <nav className="w-full flex items-center justify-between py-4 px-8 animai-glass z-10">
@@ -115,22 +165,18 @@ const Navbar = () => {
 
       <Button 
         className="bg-animai-purple hover:bg-animai-lightpurple text-white font-medium hidden md:flex items-center gap-2"
-        onClick={handleCreateClick}
+        onClick={user ? handleSignOut : handleSignInWithGoogle}
         disabled={authLoading}
       >
         {authLoading ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            Signing in...
+            {user ? 'Signing out...' : 'Signing in...'}
           </>
         ) : user ? (
           <>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"></path>
-              <path d="M12 8v8"></path>
-              <path d="M8 12h8"></path>
-            </svg>
-            Create
+            <LogOut className="h-4 w-4" />
+            Sign Out
           </>
         ) : (
           <>
