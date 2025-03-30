@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -13,6 +13,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [signOutLoading, setSignOutLoading] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -22,6 +23,19 @@ const Dashboard = () => {
       if (session) {
         console.log("User in dashboard:", session.user);
         setUser(session.user);
+        
+        // Fetch user credits
+        const { data: creditsData, error: creditsError } = await supabase
+          .from('user_credits')
+          .select('credits')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (creditsError) {
+          console.error("Error fetching credits:", creditsError);
+        } else if (creditsData) {
+          setCredits(creditsData.credits);
+        }
       } else {
         navigate('/');
         toast.error("Please sign in to access the dashboard");
@@ -111,12 +125,17 @@ const Dashboard = () => {
                 <div className="h-12 w-12 rounded-full bg-animai-purple flex items-center justify-center text-white">
                   <User size={24} />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h2 className="text-xl font-semibold text-animai-navy">
                     Welcome, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Creator'}!
                   </h2>
                   <p className="text-gray-600">{user?.email}</p>
                 </div>
+                {credits !== null && (
+                  <div className="bg-animai-purple/10 px-4 py-2 rounded-full">
+                    <span className="font-semibold text-animai-purple">{credits} credits</span>
+                  </div>
+                )}
               </div>
               <p className="text-gray-700">
                 This is your personal dashboard where you can manage your Animai creations.
@@ -134,7 +153,7 @@ const Dashboard = () => {
             <div className="p-6 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
               <h3 className="text-lg font-semibold mb-2 text-animai-navy">Create New</h3>
               <p className="text-gray-600 mb-4">Start a new animation project from scratch.</p>
-              <Button variant="anime-pink" className="w-full">New Project</Button>
+              <Button variant="anime-pink" className="w-full" onClick={() => navigate('/create')}>New Project</Button>
             </div>
           </div>
         </div>
