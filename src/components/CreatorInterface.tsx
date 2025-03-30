@@ -134,6 +134,14 @@ const CreatorInterface = () => {
             </Button>
           </div>
         </div>
+
+        {/* Example Prompts Section - Added as per user request */}
+        <div className="mt-12 px-4 text-center max-w-4xl mx-auto">
+          <div className="font-handwritten text-lg text-animai-navy space-y-3">
+            <p><span className="font-semibold">Animation prompt:</span> featuring a high school girl standing on a hill during sunset. Her long hair flows gently in the wind, and she wears a sailor-style school uniform with a red scarf. The sky behind her is painted in soft gradients of orange, pink, and purple, with clouds slowly drifting by. The girl's expression is calm and reflective, as if she's thinking about her future. Light particles float in the air, adding a touch of magic. The camera slowly pans around her, capturing the golden-hour glow on her face and the breathtaking view of distant mountains. Soft instrumental music plays in the background.</p>
+            <p><span className="font-semibold">Sound Effect prompt:</span> Light Piano or Music Box Melody</p>
+          </div>
+        </div>
       </div>
     </div>;
 };
