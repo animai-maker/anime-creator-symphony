@@ -63,6 +63,7 @@ const pricingTiers = [
       "720p export quality",
       "Watermarked exports",
     ],
+    // No planId for free tier
   },
   {
     name: "Starter",
@@ -79,6 +80,7 @@ const pricingTiers = [
       "No watermarks",
       "Standard render priority",
     ],
+    planId: "starter", // Add planId for Stripe checkout
   },
   {
     name: "Pro",
@@ -96,6 +98,7 @@ const pricingTiers = [
       "No watermarks",
       "Email support",
     ],
+    planId: "pro", // Add planId for Stripe checkout
   },
   {
     name: "Studio",
@@ -112,6 +115,7 @@ const pricingTiers = [
       "Priority support",
       "4K export quality",
     ],
+    planId: "studio", // Add planId for Stripe checkout
   },
 ];
 

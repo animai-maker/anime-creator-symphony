@@ -1,7 +1,11 @@
-
 import { Button } from "@/components/ui/button";
 import { Check, CircleDollarSign, Gift, Music, Mic, Image, Video, Sparkles, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export interface PricingTier {
     name: string;
@@ -14,6 +18,7 @@ export interface PricingTier {
     popular?: boolean;
     color: string;
     discount?: string;
+    planId?: string;
 }
 
 function CreativePricing({
@@ -31,6 +36,42 @@ function CreativePricing({
     creditInfo?: React.ReactNode;
     signupFormUrl?: string;
 }) {
+    const { initiateCheckout, isLoading } = useStripeCheckout();
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data } = await supabase.auth.getSession();
+            setIsAuthenticated(!!data.session);
+        };
+        
+        checkAuth();
+        
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+            (event, session) => {
+                setIsAuthenticated(!!session);
+            }
+        );
+        
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
+    }, []);
+
+    const handleGetStarted = (tier: PricingTier) => {
+        if (tier.planId) {
+            if (!isAuthenticated) {
+                toast.error("Please sign in to purchase credits");
+                return;
+            }
+            
+            initiateCheckout(tier.planId);
+        } else {
+            window.open(signupFormUrl, "_blank");
+        }
+    };
+
     return (
         <div className="w-full max-w-6xl mx-auto px-4 py-16">
             <div className="text-center space-y-6 mb-12">
@@ -133,7 +174,6 @@ function CreativePricing({
                                 </p>
                             </div>
 
-                            {/* Price */}
                             <div className="mb-2">
                                 <div className="flex items-end">
                                     <span className="text-4xl font-bold text-zinc-900 dark:text-white">
@@ -173,37 +213,45 @@ function CreativePricing({
                                 ))}
                             </div>
 
-                            <a 
-                                href={signupFormUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
+                            <Button
+                                onClick={() => handleGetStarted(tier)}
+                                disabled={isLoading && tier.planId !== undefined}
+                                className={cn(
+                                    "w-full h-12 text-lg font-semibold relative",
+                                    "border-2",
+                                    "transition-all duration-300",
+                                    "shadow-[4px_4px_0px_0px]",
+                                    "hover:shadow-[6px_6px_0px_0px]",
+                                    "hover:translate-x-[-2px] hover:translate-y-[-2px]",
+                                    tier.popular
+                                        ? [
+                                              "border-animai-pink shadow-animai-pink",
+                                              "bg-animai-pink text-white",
+                                              "hover:bg-animai-pink/90",
+                                              "active:bg-animai-pink",
+                                          ]
+                                        : [
+                                              "border-animai-purple shadow-animai-purple",
+                                              "bg-animai-purple text-white",
+                                              "hover:bg-animai-purple/90",
+                                              "active:bg-animai-purple",
+                                          ]
+                                )}
                             >
-                                <Button
-                                    className={cn(
-                                        "w-full h-12 text-lg font-semibold relative",
-                                        "border-2",
-                                        "transition-all duration-300",
-                                        "shadow-[4px_4px_0px_0px]",
-                                        "hover:shadow-[6px_6px_0px_0px]",
-                                        "hover:translate-x-[-2px] hover:translate-y-[-2px]",
-                                        tier.popular
-                                            ? [
-                                                  "border-animai-pink shadow-animai-pink",
-                                                  "bg-animai-pink text-white",
-                                                  "hover:bg-animai-pink/90",
-                                                  "active:bg-animai-pink",
-                                              ]
-                                            : [
-                                                  "border-animai-purple shadow-animai-purple",
-                                                  "bg-animai-purple text-white",
-                                                  "hover:bg-animai-purple/90",
-                                                  "active:bg-animai-purple",
-                                              ]
-                                    )}
-                                >
-                                    Get Started
-                                </Button>
-                            </a>
+                                {isLoading && tier.planId ? (
+                                    <span className="flex items-center justify-center">
+                                        <span className="animate-spin mr-2">
+                                            <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                        </span>
+                                        Processing...
+                                    </span>
+                                ) : (
+                                    'Get Started'
+                                )}
+                            </Button>
                         </div>
                     </div>
                 ))}

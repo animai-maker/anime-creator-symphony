@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Pricing from "./pages/Pricing";
 import CreateProject from "./pages/CreateProject";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import React, { useState, useEffect } from "react";
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { supabase } from './integrations/supabase/client';
@@ -76,6 +77,7 @@ const App = () => {
                 <Route path="/create" element={<CreateProject />} />
                 <Route path="/about" element={<Index />} />
                 <Route path="/contact" element={<Index />} />
+                <Route path="/payment-success" element={<PaymentSuccess />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
